@@ -1,0 +1,100 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #3b82f6;
+  --color-primary-dark: #2563eb;
+  --color-secondary: #4f46e5;
+  --color-navy: #0a0e1a;
+  --color-gray-light: #f8fafc;
+  --color-gray: #64748b;
+
+  --max-width-container: 1100px;
+
+  --height-header: 48px;
+  --height-navbar: 80px;
+
+  --font-inter: "Inter", sans-serif;
+}
+
+@layer base {
+  :root {
+    --primary: #3b82f6;
+    --primary-dark: #2563eb;
+    --secondary: #4f46e5;
+    --background: #ffffff;
+    --foreground: #0f172a;
+    --navy: #0a0e1a;
+    --gray-light: #f8fafc;
+    --gray: #64748b;
+    --white: #ffffff;
+
+    --header-height: 48px;
+    --navbar-height: 80px;
+
+    --max-width: 1100px;
+    --transition: all 0.3s ease;
+  }
+
+  html,
+  body {
+    @apply max-w-[100vw] overflow-x-clip bg-white text-slate-900 antialiased;
+    font-family: var(--font-inter);
+  }
+}
+
+@layer utilities {
+  .container {
+    @apply max-w-[1400px] mx-auto px-[10px] md:px-8 w-full;
+  }
+
+  @keyframes scroll {
+    0% {
+      transform: translateX(0);
+    }
+
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .animate-scroll {
+    @apply flex w-max;
+    animation: scroll 20s linear infinite;
+  }
+
+  .animate-scroll:hover {
+    animation-play-state: paused;
+  }
+
+  /* Swiper Pagination */
+  .custom-pagination .swiper-pagination-bullet {
+    width: 12px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    opacity: 1;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    margin: 0 !important;
+  }
+
+  .custom-pagination .swiper-pagination-bullet-active {
+    width: 32px;
+    background: #3b82f6;
+  }
+
+  /* Modern Sleek Scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 9999px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+}
