@@ -17,14 +17,14 @@ import {
 import { useToast } from '@/components/ToastProvider';
 
 export default function AdminStaffs() {
-  const [staffs, setStaffs] = useState<Staff[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalDocs, setTotalDocs] = useState(0);
+  const [staffs, setStaffs] = useState<Staff[]>(() => staffStore.staffs);
+  const [loading, setLoading] = useState(() => !staffStore.isStaffsInitialized && staffStore.staffs.length === 0);
+  const [page, setPage] = useState(() => staffStore.currentPage || 1);
+  const { showToast, showConfirm } = useToast();
+  const [totalPages, setTotalPages] = useState(() => staffStore.totalPages || 1);
+  const [totalDocs, setTotalDocs] = useState(() => staffStore.totalDocs || 0);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const { showToast, showConfirm } = useToast();
 
   // Edit Modal State
   const [showModal, setShowModal] = useState(false);
@@ -33,16 +33,29 @@ export default function AdminStaffs() {
     name: '',
     email: '',
     position: '',
+    role: 'General',
     status: 'staff',
   });
 
   useEffect(() => {
+    // Subscribe to real-time StaffStore changes
+    const unsubscribe = staffStore.subscribe(() => {
+      setStaffs([...staffStore.staffs]);
+      setTotalPages(staffStore.totalPages);
+      setTotalDocs(staffStore.totalDocs);
+      setLoading(staffStore.isLoadingStaffs && staffStore.staffs.length === 0);
+    });
+
     fetchStaffs();
+
+    return unsubscribe;
   }, [page]);
 
-  const fetchStaffs = async () => {
-    setLoading(true);
-    const result = await staffStore.getStaffs(page, 20);
+  const fetchStaffs = async (force = false) => {
+    if (!staffStore.isStaffsInitialized && staffStore.staffs.length === 0) {
+      setLoading(true);
+    }
+    const result = await staffStore.getStaffs(page, 20, force);
     if (result) {
       setStaffs(result.docs);
       setTotalPages(result.totalPages);
@@ -53,11 +66,15 @@ export default function AdminStaffs() {
 
   // Filter staffs by search query
   const filteredStaffs = useMemo(() => {
-    return staffs.filter(staff => 
-      staff.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      staff.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (staff.position || '').toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    return staffs.filter(staff => {
+      const r = staff.role || staff.duties || '';
+      return (
+        staff.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        staff.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (staff.position || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        r.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    });
   }, [staffs, searchQuery]);
 
   // Master Checkbox Handlers
@@ -111,6 +128,7 @@ export default function AdminStaffs() {
       name: staff.name,
       email: staff.email,
       position: staff.position || 'General Staff',
+      role: staff.role || staff.duties || 'General',
       status: staff.status,
     });
     setShowModal(true);
@@ -125,7 +143,11 @@ export default function AdminStaffs() {
 
     if (editingStaff?._id) {
       setLoading(true);
-      const updated = await staffStore.updateStaff(editingStaff._id, formData as any);
+      const payload = {
+        ...formData,
+        duties: formData.role,
+      };
+      const updated = await staffStore.updateStaff(editingStaff._id, payload as any);
       if (updated) {
         showToast('Staff profile updated successfully!', 'success');
         setShowModal(false);
@@ -265,9 +287,27 @@ export default function AdminStaffs() {
                         </div>
                       </td>
                       <td className="py-4.5 px-6">
-                        <div className="flex items-center gap-1.5 text-slate-600 font-semibold">
-                          <HiBriefcase className="text-slate-400" />
-                          <span>{staff.position || 'General Staff'}</span>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1.5 text-slate-700 font-semibold">
+                            <HiBriefcase className="text-slate-400" />
+                            <span>{staff.position || 'General Staff'}</span>
+                          </div>
+                          {(() => {
+                            const r = (staff.role || staff.duties || 'General').trim();
+                            const isGen = r.toLowerCase() === 'general' || r.toLowerCase().split(',').map(s => s.trim()).includes('general');
+                            if (isGen) {
+                              return (
+                                <span className="inline-flex items-center text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                                  General (All Menus)
+                                </span>
+                              );
+                            }
+                            return (
+                              <span className="inline-flex items-center text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
+                                Role: {r}
+                              </span>
+                            );
+                          })()}
                         </div>
                       </td>
                       <td className="py-4.5 px-6 text-slate-500">
@@ -380,6 +420,21 @@ export default function AdminStaffs() {
                   onChange={(e) => setFormData({ ...formData, position: e.target.value })}
                   className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 outline-none focus:border-primary transition-all font-medium text-slate-800"
                 />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700">Staff Role (Page Access) *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. General, or Blogs, Jobs"
+                  value={formData.role}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 outline-none focus:border-primary transition-all font-medium text-slate-800"
+                />
+                <p className="text-[11px] text-slate-400">
+                  Enter <strong>General</strong> to give full access to all sidebar menus and pages, or comma-separated pages (e.g. Blogs, Jobs).
+                </p>
               </div>
 
               <div className="space-y-2">

@@ -6,8 +6,8 @@ import { HiPlus, HiTrash, HiPencil, HiQuestionMarkCircle, HiFolder } from 'react
 import { useToast } from '@/components/ToastProvider';
 
 export default function AdminFaq() {
-  const [faqs, setFaqs] = useState<Faq[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [faqs, setFaqs] = useState<Faq[]>(() => faqStore.faqs);
+  const [loading, setLoading] = useState(() => !faqStore.isInitialized && faqStore.faqs.length === 0);
   const { showToast, showConfirm } = useToast();
   const [showModal, setShowModal] = useState(false);
   const [editingFaq, setEditingFaq] = useState<Faq | null>(null);
@@ -18,18 +18,19 @@ export default function AdminFaq() {
   });
 
   useEffect(() => {
-    fetchFaqs();
-  }, []);
+    // Subscribe to real-time FaqStore changes
+    const unsubscribe = faqStore.subscribe(() => {
+      setFaqs([...faqStore.faqs]);
+      setLoading(faqStore.isLoading && faqStore.faqs.length === 0);
+    });
 
-  const fetchFaqs = async () => {
-    const data = await faqStore.getFaqs();
-    setFaqs(data);
-    setLoading(false);
-  };
+    faqStore.getFaqs();
+
+    return unsubscribe;
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     let success = false;
     if (editingFaq?._id) {
       const res = await faqStore.updateFaq(editingFaq._id, formData);
@@ -46,7 +47,6 @@ export default function AdminFaq() {
     setShowModal(false);
     setEditingFaq(null);
     setFormData({ category: '', question: '', answer: '' });
-    await fetchFaqs();
   };
 
   const handleDelete = async (id: string) => {
@@ -56,14 +56,12 @@ export default function AdminFaq() {
       variant: 'danger',
       confirmText: 'Delete FAQ',
       onConfirm: async () => {
-        setLoading(true);
         const success = await faqStore.deleteFaq(id);
         if (success !== false) {
           showToast('FAQ deleted successfully!', 'success');
         } else {
           showToast('Failed to delete FAQ', 'error');
         }
-        await fetchFaqs();
       }
     });
   };
@@ -74,7 +72,7 @@ export default function AdminFaq() {
     setShowModal(true);
   };
 
-  if (loading) return <div className="p-8 text-center">Loading FAQs...</div>;
+  if (loading && faqs.length === 0) return <div className="p-8 text-center text-slate-500 font-medium">Loading FAQs...</div>;
 
   return (
     <div className="space-y-8">

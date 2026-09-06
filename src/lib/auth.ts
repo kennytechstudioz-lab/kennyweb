@@ -37,6 +37,15 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = (user as any)._id;
         token.status = (user as any).status;
+        token.position = (user as any).position;
+        const resolvedRole = ((user as any).role || (user as any).duties || 'General').trim() || 'General';
+        token.role = resolvedRole;
+        token.duties = resolvedRole;
+      }
+      // Always ensure role is non-empty on every token refresh
+      if (!token.role || !(token.role as string).trim()) {
+        token.role = 'General';
+        token.duties = 'General';
       }
       return token;
     },
@@ -44,6 +53,12 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         (session.user as any).id = token.id;
         (session.user as any).status = token.status;
+        (session.user as any).position = token.position;
+        // Always ensure a non-empty role so the sidebar can correctly resolve access.
+        // If the stored token role is empty, fall back to 'General'.
+        const resolvedRole = ((token.role as string) || (token.duties as string) || 'General').trim() || 'General';
+        (session.user as any).role = resolvedRole;
+        (session.user as any).duties = resolvedRole;
       }
       return session;
     }

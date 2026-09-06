@@ -32,6 +32,17 @@ class ServiceStore {
     }
   }
 
+  async getServiceById(id: string): Promise<Service | null> {
+    try {
+      const response = await fetch(`${this.apiUrl}/${id}`);
+      if (!response.ok) throw new Error('Failed to fetch service');
+      return await response.json();
+    } catch (error) {
+      console.error(`Error fetching service ${id}:`, error);
+      return null;
+    }
+  }
+
   async createService(service: Service): Promise<Service | null> {
     try {
       const response = await fetch(this.apiUrl, {

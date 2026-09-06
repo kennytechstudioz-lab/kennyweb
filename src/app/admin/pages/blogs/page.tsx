@@ -11,8 +11,8 @@ import { useToast } from '@/components/ToastProvider';
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
 export default function AdminBlogs() {
-  const [blogs, setBlogs] = useState<Blog[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [blogs, setBlogs] = useState<Blog[]>(() => blogStore.blogs);
+  const [loading, setLoading] = useState(() => !blogStore.isInitialized && blogStore.blogs.length === 0);
   const { showToast, showConfirm } = useToast();
   const [showModal, setShowModal] = useState(false);
   const [editingBlog, setEditingBlog] = useState<Blog | null>(null);
@@ -38,14 +38,16 @@ export default function AdminBlogs() {
   }), []);
 
   useEffect(() => {
-    fetchBlogs();
-  }, []);
+    // Subscribe to real-time BlogStore changes
+    const unsubscribe = blogStore.subscribe(() => {
+      setBlogs([...blogStore.blogs]);
+      setLoading(blogStore.isLoading && blogStore.blogs.length === 0);
+    });
 
-  const fetchBlogs = async () => {
-    const data = await blogStore.getBlogs();
-    setBlogs(data);
-    setLoading(false);
-  };
+    blogStore.getBlogs();
+
+    return unsubscribe;
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,7 +76,7 @@ export default function AdminBlogs() {
         date: new Date().toISOString().substring(0, 10),
         image: '',
       });
-      fetchBlogs();
+      blogStore.getBlogs();
     } catch (err: any) {
       showToast(err.message || 'Failed to save blog post', 'error');
     } finally {
@@ -89,14 +91,12 @@ export default function AdminBlogs() {
       variant: 'danger',
       confirmText: 'Delete Post',
       onConfirm: async () => {
-        setLoading(true);
         const success = await blogStore.deleteBlog(id);
         if (success !== false) {
           showToast('Blog post deleted successfully!', 'success');
         } else {
           showToast('Failed to delete blog post', 'error');
         }
-        await fetchBlogs();
       }
     });
   };
@@ -123,7 +123,7 @@ export default function AdminBlogs() {
     }
   };
 
-  if (loading) return <div className="p-8 text-center text-slate-500 font-medium">Loading blog directory...</div>;
+  if (loading && blogs.length === 0) return <div className="p-8 text-center text-slate-500 font-medium">Loading blog directory...</div>;
 
   return (
     <div className="space-y-8">

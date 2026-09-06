@@ -18,7 +18,7 @@ const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
     : pathname.split('/').pop()?.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Admin';
 
   return (
-    <header className="h-20 bg-white border-b border-slate-200 px-[10px] lg:px-8 flex items-center justify-between sticky top-0 z-[100]">
+    <header className="h-20 bg-white border-b border-slate-200 px-[10px] lg:px-8 flex items-center justify-between sticky top-0 z-[100] flex-shrink-0">
       {/* Mobile Menu Icon & Responsive Page Title */}
       <div className="flex items-center gap-3">
         <button 
