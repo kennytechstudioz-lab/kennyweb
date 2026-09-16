@@ -13,7 +13,8 @@ import {
   HiBriefcase,
   HiMail,
   HiPlus,
-  HiX
+  HiX,
+  HiCamera
 } from 'react-icons/hi';
 import { useToast } from '@/components/ToastProvider';
 
@@ -38,6 +39,7 @@ export default function AdminStaffs() {
     status: 'staff',
     address: '',
     staffRank: 99,
+    picture: '',
   });
 
   useEffect(() => {
@@ -135,6 +137,7 @@ export default function AdminStaffs() {
       status: staff.status,
       address: staff.address || '',
       staffRank: staff.staffRank ?? 99,
+      picture: staff.picture || '',
     });
     setShowModal(true);
   };
@@ -150,6 +153,7 @@ export default function AdminStaffs() {
       setLoading(true);
       const payload = {
         ...formData,
+        picture: formData.picture,
         duties: formData.role,
         address: formData.address,
         staffRank: Number(formData.staffRank) || 99,
@@ -284,9 +288,19 @@ export default function AdminStaffs() {
                       </td>
                       <td className="py-4.5 px-6">
                         <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 ${getAvatarColor(staff.name)} text-white rounded-full flex items-center justify-center font-bold text-sm shadow-sm flex-shrink-0`}>
-                            {staff.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
-                          </div>
+                          {staff.picture ? (
+                            <div className="w-10 h-10 rounded-full overflow-hidden border border-slate-200 shadow-sm flex-shrink-0 relative">
+                              <img
+                                src={staff.picture}
+                                alt={staff.name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className={`w-10 h-10 ${getAvatarColor(staff.name)} text-white rounded-full flex items-center justify-center font-bold text-sm shadow-sm flex-shrink-0`}>
+                              {staff.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                            </div>
+                          )}
                           <div>
                             <p className="font-bold text-slate-900 leading-tight">{staff.name}</p>
                             <p className="text-xs text-slate-400 font-medium mt-0.5">{staff.email}</p>
@@ -408,6 +422,62 @@ export default function AdminStaffs() {
             </div>
             
             <form onSubmit={handleFormSubmit} className="space-y-5">
+              {/* Profile Picture Upload / Preview */}
+              <div className="flex items-center gap-4 p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+                <div className="relative w-16 h-16 rounded-2xl overflow-hidden border-2 border-slate-200 bg-white flex items-center justify-center flex-shrink-0">
+                  {formData.picture ? (
+                    <img
+                      src={formData.picture}
+                      alt={formData.name || 'Staff Avatar'}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className={`w-full h-full ${getAvatarColor(formData.name || 'Staff')} text-white flex items-center justify-center font-black text-lg`}>
+                      {(formData.name || 'S').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 space-y-1">
+                  <label className="text-sm font-bold text-slate-700 block">Profile Picture</label>
+                  <div className="flex items-center gap-2">
+                    <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all shadow-sm">
+                      <HiCamera className="text-base text-primary" />
+                      <span>{formData.picture ? 'Change Photo' : 'Upload Photo'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          if (file.size > 5 * 1024 * 1024) {
+                            showToast('Image file size must be less than 5MB', 'warning');
+                            return;
+                          }
+                          const reader = new FileReader();
+                          reader.onload = () => {
+                            if (typeof reader.result === 'string') {
+                              setFormData(prev => ({ ...prev, picture: reader.result as string }));
+                              showToast('Photo selected', 'info');
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }}
+                      />
+                    </label>
+                    {formData.picture && (
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, picture: '' }))}
+                        className="px-3 py-1.5 bg-red-50 text-red-600 rounded-xl text-xs font-bold hover:bg-red-100 transition-all cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-700">Full Name *</label>
                 <input
