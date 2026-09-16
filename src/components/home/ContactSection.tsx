@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { FaFacebookF, FaTwitter, FaPinterestP, FaInstagram, FaYoutube, FaChevronDown } from 'react-icons/fa';
+import { FaFacebookF, FaLinkedinIn, FaChevronDown } from 'react-icons/fa';
+import { FaXTwitter } from 'react-icons/fa6';
 import { companyStore, Company } from '@/lib/stores/CompanyStore';
 
 const ContactSection = () => {
@@ -73,11 +74,16 @@ const ContactSection = () => {
             <div className="relative z-10 space-y-6 pt-12">
               <h3 className="text-xl font-bold">Stay Connected</h3>
               <div className="flex gap-4">
-                {[FaFacebookF, FaTwitter, FaPinterestP, FaInstagram, FaYoutube].map((Icon, i) => (
-                  <a 
-                    key={i} 
-                    href="#" 
-                    className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white transition-all hover:bg-white hover:text-primary hover:-translate-y-2"
+                {[
+                  { Icon: FaFacebookF, label: 'Facebook' },
+                  { Icon: FaLinkedinIn, label: 'LinkedIn' },
+                  { Icon: FaXTwitter, label: 'X (Twitter)' },
+                ].map(({ Icon, label }) => (
+                  <a
+                    key={label}
+                    href="#"
+                    aria-label={label}
+                    className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white transition-all hover:bg-white hover:text-primary hover:-translate-y-2 cursor-pointer"
                   >
                     <Icon />
                   </a>

@@ -12,7 +12,8 @@ import {
   HiUserGroup,
   HiBriefcase,
   HiMail,
-  HiPlus
+  HiPlus,
+  HiX
 } from 'react-icons/hi';
 import { useToast } from '@/components/ToastProvider';
 
@@ -35,6 +36,8 @@ export default function AdminStaffs() {
     position: '',
     role: 'General',
     status: 'staff',
+    address: '',
+    staffRank: 99,
   });
 
   useEffect(() => {
@@ -130,6 +133,8 @@ export default function AdminStaffs() {
       position: staff.position || 'General Staff',
       role: staff.role || staff.duties || 'General',
       status: staff.status,
+      address: staff.address || '',
+      staffRank: staff.staffRank ?? 99,
     });
     setShowModal(true);
   };
@@ -146,6 +151,8 @@ export default function AdminStaffs() {
       const payload = {
         ...formData,
         duties: formData.role,
+        address: formData.address,
+        staffRank: Number(formData.staffRank) || 99,
       };
       const updated = await staffStore.updateStaff(editingStaff._id, payload as any);
       if (updated) {
@@ -291,6 +298,9 @@ export default function AdminStaffs() {
                           <div className="flex items-center gap-1.5 text-slate-700 font-semibold">
                             <HiBriefcase className="text-slate-400" />
                             <span>{staff.position || 'General Staff'}</span>
+                            <span className="ml-2 text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full" title="Home Page Display Rank">
+                              Rank #{staff.staffRank ?? 99}
+                            </span>
                           </div>
                           {(() => {
                             const r = (staff.role || staff.duties || 'General').trim();
@@ -355,39 +365,49 @@ export default function AdminStaffs() {
               <button 
                 onClick={() => setPage(p => Math.max(p - 1, 1))}
                 disabled={page === 1}
-                className="p-2 border border-slate-200 bg-white rounded-lg text-slate-400 hover:border-primary hover:text-primary transition-all disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+                className="px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-sm"
               >
-                <HiChevronLeft className="text-lg" />
+                Previous
               </button>
-              
-              <span className="text-sm font-bold bg-primary text-white w-9 h-9 flex items-center justify-center rounded-lg shadow-md shadow-primary/20">
-                {page}
-              </span>
-              
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={`w-8 h-8 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      p === page 
+                        ? 'bg-primary text-white shadow-md shadow-primary/20' 
+                        : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
               <button 
                 onClick={() => setPage(p => Math.min(p + 1, totalPages))}
                 disabled={page === totalPages}
-                className="p-2 border border-slate-200 bg-white rounded-lg text-slate-400 hover:border-primary hover:text-primary transition-all disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+                className="px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-sm"
               >
-                <HiChevronRight className="text-lg" />
+                Next
               </button>
             </div>
           </div>
         )}
       </div>
 
-      {/* Edit Modal */}
+      {/* Edit Staff Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg flex flex-col overflow-hidden">
-            <div className="px-8 py-6 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
-              <h2 className="text-2xl font-black text-slate-900">Edit Staff Record</h2>
-              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors cursor-pointer">
-                <HiPlus className="text-3xl rotate-45" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-[32px] p-8 max-w-lg w-full shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-black text-slate-900">Edit Staff Profile</h3>
+              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+                <HiX className="text-2xl" />
               </button>
             </div>
             
-            <form onSubmit={handleFormSubmit} className="p-8 space-y-6">
+            <form onSubmit={handleFormSubmit} className="space-y-5">
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-700">Full Name *</label>
                 <input
@@ -411,7 +431,7 @@ export default function AdminStaffs() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700">Professional Position *</label>
+                <label className="text-sm font-bold text-slate-700">Company Position *</label>
                 <input
                   type="text"
                   required
@@ -423,13 +443,12 @@ export default function AdminStaffs() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700">Staff Role (Page Access) *</label>
+                <label className="text-sm font-bold text-slate-700">Duties / Allowed Pages</label>
                 <input
                   type="text"
-                  required
-                  placeholder="e.g. General, or Blogs, Jobs"
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  placeholder="e.g. General, Blogs, Jobs"
                   className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 outline-none focus:border-primary transition-all font-medium text-slate-800"
                 />
                 <p className="text-[11px] text-slate-400">
@@ -437,18 +456,44 @@ export default function AdminStaffs() {
                 </p>
               </div>
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700">System Role (Status) *</label>
+                  <select
+                    required
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 outline-none focus:border-primary transition-all font-medium text-slate-800 cursor-pointer"
+                  >
+                    <option value="staff">Staff</option>
+                    <option value="admin">Admin</option>
+                    <option value="user">User (Demote to regular customer)</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700">Display Rank</label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={formData.staffRank}
+                    onChange={(e) => setFormData({ ...formData, staffRank: e.target.value === '' ? '' : Number(e.target.value) as any })}
+                    placeholder="e.g. 1"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 outline-none focus:border-primary transition-all font-medium text-slate-800"
+                  />
+                  <p className="text-[11px] text-slate-400">Lower numbers appear first on home page</p>
+                </div>
+              </div>
+
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700">System Role (Status) *</label>
-                <select
-                  required
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 outline-none focus:border-primary transition-all font-medium text-slate-800 cursor-pointer"
-                >
-                  <option value="staff">Staff</option>
-                  <option value="admin">Admin</option>
-                  <option value="user">User (Demote to regular customer)</option>
-                </select>
+                <label className="text-sm font-bold text-slate-700">Address</label>
+                <textarea
+                  rows={3}
+                  placeholder="e.g. 123 Main Street, Lagos, Nigeria"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 outline-none focus:border-primary transition-all font-medium text-slate-800 resize-none"
+                />
               </div>
 
               <div className="pt-4 flex gap-4">

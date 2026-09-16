@@ -1,17 +1,42 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { FaFacebookF, FaTwitter, FaPinterestP, FaInstagram, FaYoutube, FaPaperPlane } from 'react-icons/fa';
+import { FaFacebookF, FaLinkedinIn, FaPaperPlane } from 'react-icons/fa';
+import { FaXTwitter } from 'react-icons/fa6';
+import { HiCheckCircle, HiInformationCircle, HiExclamationCircle } from 'react-icons/hi';
 import Image from 'next/image';
 import Link from 'next/link';
 import { companyStore, Company } from '@/lib/stores/CompanyStore';
 import { usePathname } from 'next/navigation';
+import { subscribeToNewsletter, SubscribeStatus } from '@/lib/subscribeNewsletter';
 
 const Footer = () => {
   const [company, setCompany] = useState<Company | null>(null);
   const [loading, setLoading] = useState(true);
   const pathname = usePathname();
   const isContactPage = pathname === '/contact';
+
+  // Newsletter subscribe state
+  const [subEmail, setSubEmail] = useState('');
+  const [subLoading, setSubLoading] = useState(false);
+  const [subResult, setSubResult] = useState<{ status: SubscribeStatus; message: string } | null>(null);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!subEmail) return;
+    setSubLoading(true);
+    setSubResult(null);
+    const res = await subscribeToNewsletter(subEmail);
+    setSubResult(res);
+    setSubLoading(false);
+    if (res.status === 'success') setSubEmail('');
+  };
+
+  const subStatusStyles: Record<SubscribeStatus, { icon: React.ReactNode; cls: string }> = {
+    success: { icon: <HiCheckCircle className="shrink-0" />, cls: 'text-emerald-400' },
+    already_subscribed: { icon: <HiInformationCircle className="shrink-0" />, cls: 'text-amber-400' },
+    error: { icon: <HiExclamationCircle className="shrink-0" />, cls: 'text-red-400' },
+  };
 
   useEffect(() => {
     const fetchCompany = async () => {
@@ -62,10 +87,15 @@ const Footer = () => {
               Kenny Tech Studios is a leading provider of innovative digital solutions, specializing in software development, web & mobile applications, and high-impact digital marketing.
             </p>
             <div className="flex gap-4">
-              {[FaFacebookF, FaTwitter, FaPinterestP, FaInstagram, FaYoutube].map((Icon, i) => (
+              {[
+                { Icon: FaFacebookF, href: '#', label: 'Facebook' },
+                { Icon: FaLinkedinIn, href: '#', label: 'LinkedIn' },
+                { Icon: FaXTwitter, href: '#', label: 'X (Twitter)' },
+              ].map(({ Icon, href, label }) => (
                 <a
-                  key={i}
-                  href="#"
+                  key={label}
+                  href={href}
+                  aria-label={label}
                   className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-primary transition-all hover:-translate-y-1"
                 >
                   <Icon className="text-sm" />
@@ -78,12 +108,18 @@ const Footer = () => {
           <div className="space-y-8">
             <h3 className="text-xl font-bold border-l-4 border-primary pl-4">Navigation</h3>
             <ul className="space-y-4 text-white/60 font-medium">
-              {['Our Team', 'Career', 'About Us', 'Testimonial', 'FAQs'].map((item) => (
-                <li key={item}>
-                  <a href="#" className="hover:text-primary transition-colors flex items-center gap-2 group">
+              {[
+                { label: 'About Us', href: '/#about' },
+                { label: 'Testimonial', href: '/#testimonial' },
+                { label: 'Projects', href: '/projects' },
+                { label: 'FAQs', href: '/faqs' },
+                { label: 'Contact', href: '/contact' },
+              ].map(({ label, href }) => (
+                <li key={label}>
+                  <Link href={href} className="hover:text-primary transition-colors flex items-center gap-2 group">
                     <span className="w-1.5 h-1.5 bg-primary rounded-full opacity-0 group-hover:opacity-100 transition-all"></span>
-                    {item}
-                  </a>
+                    {label}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -112,18 +148,34 @@ const Footer = () => {
           </div>
 
           {/* Newsletter */}
-          <div className="space-y-8">
+          <div className="space-y-4">
             <h3 className="text-xl font-bold border-l-4 border-primary pl-4">Get the latest information</h3>
-            <div className="relative">
-              <input
-                type="email"
-                placeholder="Email address"
-                className="w-full bg-white/5 border border-white/10 rounded-full py-4 pl-6 pr-16 focus:outline-none focus:border-primary transition-all text-sm"
-              />
-              <button className="absolute right-1 top-1 bottom-1 aspect-square bg-primary rounded-full flex items-center justify-center hover:bg-white hover:text-primary transition-all">
-                <FaPaperPlane className="text-xs" />
-              </button>
-            </div>
+            <form onSubmit={handleSubscribe}>
+              <div className="relative">
+                <input
+                  type="email"
+                  placeholder="Email address"
+                  value={subEmail}
+                  onChange={(e) => setSubEmail(e.target.value)}
+                  required
+                  disabled={subLoading}
+                  className="w-full bg-white/5 border border-white/10 rounded-full py-4 pl-6 pr-16 focus:outline-none focus:border-primary transition-all text-sm disabled:opacity-60"
+                />
+                <button
+                  type="submit"
+                  disabled={subLoading}
+                  className="absolute right-1 top-1 bottom-1 aspect-square bg-primary rounded-full flex items-center justify-center hover:bg-white hover:text-primary transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  <FaPaperPlane className="text-xs" />
+                </button>
+              </div>
+            </form>
+            {subResult && (
+              <div className={`flex items-start gap-2 text-xs font-semibold leading-relaxed ${subStatusStyles[subResult.status].cls}`}>
+                {subStatusStyles[subResult.status].icon}
+                <span>{subResult.message}</span>
+              </div>
+            )}
           </div>
 
         </div>
@@ -134,9 +186,9 @@ const Footer = () => {
         <div className="container flex flex-col md:flex-row justify-between items-center gap-4 text-sm font-semibold text-white">
           <p>Copyright © {new Date().getFullYear()} {company?.name || 'Kenny Tech Studios'}. All Rights Reserved.</p>
           <div className="flex gap-6">
-            <a href="#" className="hover:underline">User Terms & Conditions</a>
+            <Link href="/terms-and-conditions" className="hover:underline">User Terms &amp; Conditions</Link>
             <span className="opacity-40">|</span>
-            <a href="#" className="hover:underline">Privacy Policy</a>
+            <Link href="/privacy-policy" className="hover:underline">Privacy Policy</Link>
           </div>
         </div>
       </div>

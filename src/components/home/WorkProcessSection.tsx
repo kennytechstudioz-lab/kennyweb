@@ -5,25 +5,25 @@ const steps = [
   {
     number: '01',
     title: 'Consultation',
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
+    description: 'We start by understanding your goals, challenges, and vision through a focused discovery session — so every solution we build is grounded in what truly matters to you.',
     icon: <FaClipboardList className="text-3xl" />
   },
   {
     number: '02',
     title: 'Strategy',
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
+    description: 'We map out a clear roadmap tailored to your project — defining the tech stack, milestones, and approach that balances speed, scalability, and long-term success.',
     icon: <FaLightbulb className="text-3xl" />
   },
   {
     number: '03',
     title: 'Implementation',
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
+    description: 'Our team brings the plan to life with clean, well-structured code and modern best practices — keeping you in the loop at every stage with transparent progress updates.',
     icon: <FaLayerGroup className="text-3xl" />
   },
   {
     number: '04',
     title: 'Final Result',
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
+    description: 'We deliver a polished, fully tested product and stay by your side post-launch — ensuring everything performs flawlessly and evolves as your business grows.',
     icon: <FaRegSmile className="text-3xl" />
   }
 ];
@@ -36,7 +36,7 @@ const WorkProcessSection = () => {
         Work Process
       </div>
 
-      <div className="container relative z-10 text-center">
+      <div className="container px-0 relative z-10 text-center">
         <div className="flex flex-col items-center gap-4 mb-16">
           <div className="flex items-center gap-2 font-semibold text-primary">
             <span className="text-2xl">//</span>
@@ -47,7 +47,7 @@ const WorkProcessSection = () => {
           </h2>
         </div>
 
-        <div className="relative flex flex-col lg:flex-row justify-between items-start gap-12 lg:gap-8 pt-10">
+        <div className="relative flex flex-col lg:flex-row justify-between items-start gap-5 pt-10">
           {/* Connecting Line (Desktop) */}
           <div className="hidden lg:block absolute top-[50px] left-[10%] right-[10%] h-[2px] bg-slate-100 -z-10"></div>
           
@@ -68,7 +68,7 @@ const WorkProcessSection = () => {
                 {step.title}
               </h3>
               
-              <p className="text-slate-500 max-w-[200px]">
+              <p className="text-slate-500">
                 {step.description}
               </p>
             </div>

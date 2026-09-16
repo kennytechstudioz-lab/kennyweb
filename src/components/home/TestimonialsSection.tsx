@@ -50,7 +50,7 @@ const allTestimonials = [...testimonials, ...testimonials];
 
 const TestimonialsSection = () => {
   return (
-    <section className="py-24 relative overflow-hidden bg-navy text-white">
+    <section id="testimonial" className="py-24 relative overflow-hidden bg-navy text-white scroll-mt-20">
       {/* Background Text (Outline) */}
       <div className="absolute top-12 left-1/2 -translate-x-1/2 text-[10rem] font-black select-none pointer-events-none z-0 uppercase tracking-tighter opacity-[0.05] whitespace-nowrap" style={{ WebkitTextStroke: '2px #ffffff' }}>
         Testimonials

@@ -6,22 +6,22 @@ import { HiOutlineUserGroup } from 'react-icons/hi';
 const benefits = [
   {
     title: 'Affordable Price',
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore...',
+    description: 'Premium-quality tech solutions at rates that respect your budget, with no hidden fees.',
     icon: <FaHandHoldingUsd className="text-4xl text-white" />
   },
   {
     title: 'Professional Team',
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore...',
+    description: 'A dedicated crew of skilled developers, designers, and strategists on every project.',
     icon: <HiOutlineUserGroup className="text-4xl text-white" />
   },
   {
-    title: '18+ Years Experience',
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore...',
+    title: 'Regular Service Update',
+    description: 'We keep your products fresh with consistent updates, improvements, and maintenance.',
     icon: <FaBusinessTime className="text-4xl text-white" />
   },
   {
-    title: 'Award Winning',
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore...',
+    title: '24/7 Online Support',
+    description: 'Round-the-clock assistance so you\'re never left waiting when something needs attention.',
     icon: <FaTrophy className="text-4xl text-white" />
   }
 ];

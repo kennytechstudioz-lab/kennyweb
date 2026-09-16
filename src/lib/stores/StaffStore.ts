@@ -8,6 +8,8 @@ export interface Staff {
   duties?: string;
   picture?: string;
   quote?: string;
+  address?: string;
+  staffRank?: number;
   createdAt: string;
 }
 
@@ -140,6 +142,18 @@ class StaffStore {
       this.isLoadingStaffs = false;
       this.notify();
       return null;
+    }
+  }
+
+  async getPublicTeam(): Promise<Staff[]> {
+    try {
+      const response = await fetch(`${this.apiUrl}/team`);
+      if (!response.ok) throw new Error('Failed to fetch public team');
+      const team: Staff[] = await response.json();
+      return team;
+    } catch (error) {
+      console.error('Error fetching public team:', error);
+      return [];
     }
   }
 

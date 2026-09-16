@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaPlus, FaMinus, FaPhoneAlt, FaRegComments } from 'react-icons/fa';
+import { companyStore, Company } from '@/lib/stores/CompanyStore';
 
 const faqs = [
   {
@@ -31,7 +32,12 @@ const faqs = [
 ];
 
 const FaqSection = () => {
-  const [openIndex, setOpenIndex] = useState(1); // Second one open by default as per image
+  const [openIndex, setOpenIndex] = useState(1);
+  const [company, setCompany] = useState<Company | null>(null);
+
+  useEffect(() => {
+    companyStore.getCompany().then(setCompany);
+  }, []);
 
   return (
     <section className="py-24 relative overflow-hidden bg-slate-50">
@@ -98,7 +104,7 @@ const FaqSection = () => {
                 <p className="text-white/60">Our team will answer all your questions. We ensure a quick response.</p>
               </div>
               
-              <button className="relative z-10 bg-primary text-white px-10 py-4 rounded-full font-bold transition-all hover:bg-white hover:text-primary">
+              <button className="relative z-10 bg-primary text-white px-10 py-4 rounded-full font-bold transition-all hover:bg-white hover:text-primary cursor-pointer">
                 Contact Us
               </button>
             </div>
@@ -111,7 +117,7 @@ const FaqSection = () => {
               <div className="space-y-1">
                 <p className="text-slate-400 text-sm font-medium">Your Comfort, Our Priority</p>
                 <h4 className="text-2xl font-black text-slate-900">24/7 Service</h4>
-                <p className="text-slate-600 font-bold">(000) 000-0000</p>
+                <p className="text-slate-600 font-bold">{company?.phoneNumber || '(000) 000-0000'}</p>
               </div>
             </div>
           </div>

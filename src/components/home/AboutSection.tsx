@@ -27,7 +27,7 @@ const AboutSection = () => {
   const imageUrl = aboutBlog?.image || '/about-1.png';
 
   return (
-    <section className="py-24 relative overflow-hidden bg-white">
+    <section id="about" className="py-24 relative overflow-hidden bg-white scroll-mt-20">
       {/* Background Text (Outline) */}
       <div
         className="absolute top-24 right-[-5%] text-[12rem] font-black select-none pointer-events-none z-0 uppercase tracking-tighter opacity-[0.03]"
@@ -60,7 +60,7 @@ const AboutSection = () => {
             </div>
 
             <h2 className="text-4xl md:text-5xl font-extrabold leading-[1.1] text-slate-900">
-              {aboutBlog ? (
+              {aboutBlog?.title && aboutBlog.title.trim().toLowerCase() !== 'about us' ? (
                 aboutBlog.title
               ) : (
                 <>
@@ -72,8 +72,28 @@ const AboutSection = () => {
 
             <p className="text-slate-500 text-lg leading-relaxed">
               {aboutBlog?.subtitle ||
-                'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.'}
+                'At Kenny Tech Studios, we specialize in cutting-edge web & mobile application development, UI/UX design, brand identity, digital marketing, and video editing — turning visionary ideas into scalable digital realities that accelerate business growth.'}
             </p>
+
+            {/* Service Highlights */}
+            <div className="flex flex-wrap gap-2.5 pt-1">
+              {[
+                'Web Development',
+                'Mobile Apps',
+                'UI/UX Design',
+                'Graphic Branding',
+                'Digital Marketing',
+                'Video Editing'
+              ].map((service, idx) => (
+                <span
+                  key={idx}
+                  className="inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-bold bg-slate-50 text-slate-700 border border-slate-200/80"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary mr-2"></span>
+                  {service}
+                </span>
+              ))}
+            </div>
           </div>
 
         </div>
