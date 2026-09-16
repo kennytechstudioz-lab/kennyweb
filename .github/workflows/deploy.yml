@@ -23,4 +23,4 @@ jobs:
             cd /var/www/projects/kenny/web
             git fetch origin main
             git reset --hard origin/main
-            bash deploy.sh
+            bash /var/www/projects/kenny/web/deploy.sh
