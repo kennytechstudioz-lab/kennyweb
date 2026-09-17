@@ -12,6 +12,7 @@ import { projectStore } from '@/lib/stores/ProjectStore';
 import { serviceStore } from '@/lib/stores/ServiceStore';
 import { faqStore } from '@/lib/stores/FaqStore';
 import { testimonialStore } from '@/lib/stores/TestimonialStore';
+import SmartsuppChat from '@/components/common/SmartsuppChat';
 
 export default function HomeLayout({
   children,
@@ -100,6 +101,7 @@ export default function HomeLayout({
         <Navbar />
         <main>{children}</main>
         <Footer />
+        <SmartsuppChat />
       </div>
 
       <style jsx global>{`

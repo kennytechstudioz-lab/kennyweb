@@ -58,6 +58,18 @@ export default function AdminLayout({
     emailStore.syncIncomingEmails(true).catch(() => {});
   }, [userId, sessionRole]);
 
+  // Ensure customer support chat widgets are hidden in the admin backoffice
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const win = window as any;
+      if (win.smartsupp) {
+        try {
+          win.smartsupp('chat:hide');
+        } catch (e) {}
+      }
+    }
+  }, [pathname]);
+
   // Check if current route requires a role permission that the staff user lacks
   let isAccessDenied = false;
   let requiredRoleName = '';
@@ -119,6 +131,15 @@ export default function AdminLayout({
           )}
         </main>
       </div>
+
+      <style jsx global>{`
+        iframe[id*="smartsupp"],
+        #smartsupp-widget-container,
+        div[id*="smartsupp"],
+        div[class*="smartsupp"] {
+          display: none !important;
+        }
+      `}</style>
     </div>
   );
 }
