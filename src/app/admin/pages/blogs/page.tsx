@@ -2,13 +2,39 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { blogStore, Blog } from '@/lib/stores/BlogStore';
-import { HiPlus, HiTrash, HiPencil, HiDocumentText, HiTag, HiUser, HiCalendar } from 'react-icons/hi';
+import { HiPlus, HiTrash, HiPencil, HiDocumentText, HiTag, HiUser, HiCalendar, HiVideoCamera, HiUpload } from 'react-icons/hi';
 import dynamic from 'next/dynamic';
 import 'react-quill-new/dist/quill.snow.css';
 import { useToast } from '@/components/ToastProvider';
 
 // Dynamically import ReactQuill to avoid SSR issues
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
+
+function getYouTubeEmbedUrl(url: string): string {
+  try {
+    let videoId = '';
+    if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1]?.split('?')[0] || '';
+    } else if (url.includes('youtube.com/watch')) {
+      const urlParams = new URL(url).searchParams;
+      videoId = urlParams.get('v') || '';
+    } else if (url.includes('youtube.com/embed/')) {
+      return url;
+    }
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+  } catch {
+    return url;
+  }
+}
+
+function getVimeoEmbedUrl(url: string): string {
+  try {
+    const match = url.match(/vimeo\.com\/(\d+)/);
+    return match ? `https://player.vimeo.com/video/${match[1]}` : url;
+  } catch {
+    return url;
+  }
+}
 
 export default function AdminBlogs() {
   const [blogs, setBlogs] = useState<Blog[]>(() => blogStore.blogs);
@@ -26,6 +52,7 @@ export default function AdminBlogs() {
     content: '',
     date: new Date().toISOString().substring(0, 10),
     image: '',
+    videoUrl: '',
   });
 
   const quillModules = useMemo(() => ({
@@ -75,6 +102,7 @@ export default function AdminBlogs() {
         content: '',
         date: new Date().toISOString().substring(0, 10),
         image: '',
+        videoUrl: '',
       });
       blogStore.getBlogs();
     } catch (err: any) {
@@ -109,7 +137,8 @@ export default function AdminBlogs() {
     
     setFormData({
       ...blog,
-      date: formattedDate
+      date: formattedDate,
+      videoUrl: blog.videoUrl || '',
     });
     setShowModal(true);
   };
@@ -143,6 +172,7 @@ export default function AdminBlogs() {
               content: '',
               date: new Date().toISOString().substring(0, 10),
               image: '',
+              videoUrl: '',
             });
             setShowModal(true);
           }}
@@ -196,7 +226,15 @@ export default function AdminBlogs() {
                           <HiDocumentText className="text-sm" />
                         </div>
                         <div>
-                          <span className="font-bold text-slate-900 block max-w-xs truncate">{blog.title}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-900 block max-w-xs truncate">{blog.title}</span>
+                            {blog.videoUrl && (
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-red-50 text-red-600 rounded text-[10px] font-bold border border-red-100 flex-shrink-0" title="Includes Video">
+                                <HiVideoCamera className="text-xs" />
+                                Video
+                              </span>
+                            )}
+                          </div>
                           <span className="text-[10px] text-slate-400 font-bold block truncate max-w-xs">{blog.subtitle}</span>
                         </div>
                       </div>
@@ -274,11 +312,27 @@ export default function AdminBlogs() {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Web Development, Mobile Apps"
+                    placeholder="e.g. Why Choose Us, Web Development"
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 outline-none focus:border-primary transition-all font-medium text-slate-800"
                   />
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {['Why Choose Us', 'Hero', 'About', 'Web Development', 'Mobile Apps', 'Digital Marketing'].map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, category: cat })}
+                        className={`text-[11px] px-2.5 py-1 rounded-full font-semibold transition-all cursor-pointer ${
+                          formData.category?.toLowerCase() === cat.toLowerCase()
+                            ? 'bg-primary text-white shadow-sm'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-slate-700">Author Name *</label>
@@ -367,6 +421,96 @@ export default function AdminBlogs() {
                     <span className="text-xs font-bold text-slate-500 group-hover:text-slate-700 transition-colors">Click to upload cover image</span>
                     <span className="text-[10px] text-slate-400">Supports PNG, JPG, WEBP</span>
                   </label>
+                )}
+              </div>
+
+              {/* Video Section (Optional) */}
+              <div className="space-y-3 bg-slate-50/70 p-5 rounded-2xl border border-slate-200/80">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                    <HiVideoCamera className="text-primary text-lg" />
+                    Video (Optional - Supports YouTube, Vimeo or MP4)
+                  </label>
+                  {formData.videoUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, videoUrl: '' })}
+                      className="text-xs text-red-500 hover:text-red-700 font-bold cursor-pointer"
+                    >
+                      Remove Video
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-500 block mb-1">Option A: Video Link</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. https://www.youtube.com/watch?v=..."
+                      value={formData.videoUrl || ''}
+                      onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                      className="w-full bg-white border border-slate-200 rounded-xl p-3.5 outline-none focus:border-primary transition-all font-medium text-slate-800 text-sm"
+                    />
+                    <span className="text-[11px] text-slate-400 block mt-1">Paste a YouTube, Vimeo, or direct MP4 link</span>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-slate-500 block mb-1">Option B: Upload Video File</label>
+                    <input
+                      type="file"
+                      accept="video/mp4,video/webm,video/ogg"
+                      id="blog-video-upload"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          if (file.size > 45 * 1024 * 1024) {
+                            showToast('Video file size exceeds 45MB limit', 'warning');
+                            return;
+                          }
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setFormData({ ...formData, videoUrl: reader.result as string });
+                            showToast('Video loaded successfully', 'success');
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                    <label
+                      htmlFor="blog-video-upload"
+                      className="flex items-center justify-center gap-2 w-full h-[46px] bg-white border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100/50 hover:border-primary transition-all p-3 text-center text-slate-600 font-semibold text-xs"
+                    >
+                      <HiUpload className="text-base text-primary" />
+                      <span>Choose MP4 or WebM file (max 45MB)</span>
+                    </label>
+                  </div>
+                </div>
+
+                {formData.videoUrl && (
+                  <div className="mt-3">
+                    <label className="text-xs font-semibold text-slate-500 block mb-1">Video Player Preview</label>
+                    <div className="rounded-xl overflow-hidden border border-slate-200 bg-black aspect-video max-h-56 relative flex items-center justify-center shadow-inner">
+                      {formData.videoUrl.includes('youtube.com') || formData.videoUrl.includes('youtu.be') ? (
+                        <iframe
+                          src={getYouTubeEmbedUrl(formData.videoUrl)}
+                          className="w-full h-full"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      ) : formData.videoUrl.includes('vimeo.com') ? (
+                        <iframe
+                          src={getVimeoEmbedUrl(formData.videoUrl)}
+                          className="w-full h-full"
+                          allow="autoplay; fullscreen"
+                          allowFullScreen
+                        />
+                      ) : (
+                        <video src={formData.videoUrl} controls className="w-full h-full object-contain" />
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
 

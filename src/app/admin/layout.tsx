@@ -17,6 +17,7 @@ const ROUTE_ROLE_MAP: { [routePrefix: string]: string } = {
   '/admin/projects': 'Projects',
   '/admin/pages/faq': 'FAQ',
   '/admin/pages/blogs': 'Blogs',
+  '/admin/pages/testimonials': 'Testimonials',
   '/admin/pages/terms': 'Terms & Conditions',
   '/admin/company/settings': 'Settings',
   '/admin/company/positions': 'Positions',

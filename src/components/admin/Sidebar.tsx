@@ -18,7 +18,8 @@ import {
   HiMail,
   HiBell,
   HiX,
-  HiAcademicCap
+  HiAcademicCap,
+  HiChatAlt2
 } from 'react-icons/hi';
 import Image from 'next/image';
 
@@ -89,6 +90,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     { name: 'Projects', href: '/admin/projects', icon: HiCollection, roleKey: 'Projects' },
     { name: 'FAQ', href: '/admin/pages/faq', icon: HiDocumentText, roleKey: 'FAQ' },
     { name: 'Blogs', href: '/admin/pages/blogs', icon: HiDocumentText, roleKey: 'Blogs' },
+    { name: 'Testimonials', href: '/admin/pages/testimonials', icon: HiChatAlt2, roleKey: 'Testimonials' },
     { name: 'Terms & Conditions', href: '/admin/pages/terms', icon: HiDocumentText, roleKey: 'Terms & Conditions' },
   ];
 

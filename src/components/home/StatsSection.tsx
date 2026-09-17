@@ -1,25 +1,38 @@
-import React from 'react';
-import Image from 'next/image';
+'use client';
 
-const stats = [
-  { value: '150+', label: 'Team Members' },
-  { value: '2000+', label: 'Happy Clients' },
-  { value: '99%', label: 'Customer Satisfaction' },
-  { value: '18+', label: 'Years Experience' }
-];
+import React, { useEffect, useState } from 'react';
+import { companyStore, Company } from '@/lib/stores/CompanyStore';
 
 const StatsSection = () => {
+  const [company, setCompany] = useState<Company | null>(companyStore.company);
+
+  useEffect(() => {
+    companyStore.getCompany().then(data => {
+      if (data) setCompany(data);
+    });
+  }, []);
+
+  const completedJobs = company?.completedJobs || '150+';
+  const clients = company?.clients || '2000+';
+  let satisfaction = company?.customerSatisfaction || '99%';
+  if (satisfaction && !satisfaction.endsWith('%') && !isNaN(Number(satisfaction))) {
+    satisfaction = `${satisfaction}%`;
+  }
+  const years = company?.yearsExperience || '18+';
+
+  const stats = [
+    { value: completedJobs, label: 'Completed Jobs' },
+    { value: clients, label: 'Happy Clients' },
+    { value: satisfaction, label: 'Customer Satisfaction' },
+    { value: years, label: 'Years Experience' },
+  ];
+
   return (
-    <section className="relative py-20 overflow-hidden">
-      {/* Background Image with Overlay */}
-      <div className="absolute inset-0 z-0">
-        <Image 
-          src="/video-thumb.png" 
-          alt="Stats Background" 
-          fill 
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-navy/90 backdrop-blur-[2px]"></div>
+    <section className="relative py-20 overflow-hidden bg-gradient-to-r from-navy via-[#0c1830] to-navy border-y border-white/5">
+      {/* Background Decorative Tech Glows */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-y-1/2"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl translate-y-1/2"></div>
       </div>
 
       <div className="container relative z-10">

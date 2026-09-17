@@ -12,7 +12,10 @@ export interface Project {
 
 class ProjectStore {
   private static instance: ProjectStore;
-  private apiUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5001'}/api/projects`;
+  private apiUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8003'}/api/projects`;
+
+  public projects: Project[] = [];
+  public isInitialized: boolean = false;
 
   private constructor() {}
 
@@ -23,14 +26,20 @@ class ProjectStore {
     return ProjectStore.instance;
   }
 
-  async getProjects(): Promise<Project[]> {
+  async getProjects(force = false): Promise<Project[]> {
+    if (this.isInitialized && this.projects.length > 0 && !force) {
+      return this.projects;
+    }
     try {
       const response = await fetch(this.apiUrl);
       if (!response.ok) throw new Error('Failed to fetch projects');
-      return await response.json();
+      const data: Project[] = await response.json();
+      this.projects = Array.isArray(data) ? data : [];
+      this.isInitialized = true;
+      return this.projects;
     } catch (error) {
       console.error('Error fetching projects:', error);
-      return [];
+      return this.projects;
     }
   }
 

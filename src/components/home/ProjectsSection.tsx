@@ -8,8 +8,8 @@ import { HiOutlineArrowNarrowRight } from 'react-icons/hi';
 import { projectStore, Project } from '@/lib/stores/ProjectStore';
 
 const ProjectsSection = () => {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [projects, setProjects] = useState<Project[]>(() => projectStore.projects.slice(0, 4));
+  const [loading, setLoading] = useState(projectStore.projects.length === 0);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -21,12 +21,12 @@ const ProjectsSection = () => {
     fetchProjects();
   }, []);
 
-  if (loading) {
-    return (
-      <section className="py-24 text-center text-slate-500 font-medium bg-white">
-        Loading featured works...
-      </section>
-    );
+  if (loading && projects.length === 0) {
+    return null;
+  }
+
+  if (projects.length === 0) {
+    return null;
   }
 
   return (
@@ -55,12 +55,19 @@ const ProjectsSection = () => {
               href={`/projects/details?id=${project._id}`}
               className="group relative aspect-square rounded-[40px] overflow-hidden shadow-2xl cursor-pointer block"
             >
-              <Image 
-                src={project.image} 
-                alt={project.name} 
-                fill 
-                className="object-cover transition-transform duration-700 group-hover:scale-110"
-              />
+              {project.image && project.image.trim() !== '' ? (
+                <Image 
+                  src={project.image} 
+                  alt={project.name} 
+                  fill 
+                  unoptimized={project.image.startsWith('data:') || project.image.startsWith('http')}
+                  className="object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-navy via-slate-900 to-primary/40 flex items-center justify-center">
+                  <span className="text-4xl font-black text-white/30">{project.category || 'Project'}</span>
+                </div>
+              )}
               
               {/* Overlay Gradient */}
               <div className="absolute inset-0 bg-gradient-to-t from-navy/90 via-navy/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>

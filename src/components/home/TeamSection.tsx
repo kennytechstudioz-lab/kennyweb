@@ -2,61 +2,82 @@
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { FaFacebookF, FaTwitter, FaPinterestP, FaInstagram } from 'react-icons/fa';
+import { FaFacebookF, FaLinkedinIn, FaInstagram, FaYoutube, FaTiktok } from 'react-icons/fa';
+import { FaXTwitter } from 'react-icons/fa6';
 import { staffStore, Staff } from '@/lib/stores/StaffStore';
+import { companyStore, Company } from '@/lib/stores/CompanyStore';
 
 const fallbackTeam: Partial<Staff>[] = [
   {
     _id: 'f1',
-    name: 'Jenny Alexander',
+    name: 'Executive Leadership',
     position: 'Chief Executive Officer',
-    picture: '/team-1.png',
     staffRank: 1,
   },
   {
     _id: 'f2',
-    name: 'Olivia Hughes',
-    position: 'Chief Technology Officer',
-    picture: '/team-2.png',
+    name: 'Technical Architecture',
+    position: 'Lead Software Engineer',
     staffRank: 2,
   },
   {
     _id: 'f3',
-    name: 'Sophia Lewis',
-    position: 'IT Project Manager',
-    picture: '/avatar-1.png',
+    name: 'Product Delivery',
+    position: 'Senior Project Manager',
     staffRank: 3,
   },
 ];
 
 const TeamSection = () => {
-  const [teamMembers, setTeamMembers] = useState<Partial<Staff>[]>(fallbackTeam);
+  const [teamMembers, setTeamMembers] = useState<Partial<Staff>[]>(
+    staffStore.teamMembers.length > 0 ? staffStore.teamMembers : []
+  );
+  const [company, setCompany] = useState<Company | null>(companyStore.company);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
-    async function loadTeam() {
+    async function loadData() {
       try {
-        const data = await staffStore.getPublicTeam();
-        if (isMounted && data && data.length > 0) {
-          // Sort by staffRank ascending (1, 2, 3...)
-          const sorted = [...data].sort(
-            (a, b) => (a.staffRank ?? 99) - (b.staffRank ?? 99)
-          );
-          setTeamMembers(sorted);
+        const [teamData, companyData] = await Promise.all([
+          staffStore.getPublicTeam(),
+          companyStore.getCompany(),
+        ]);
+        if (isMounted) {
+          if (teamData && teamData.length > 0) {
+            // Sort by staffRank ascending (1, 2, 3...)
+            const sorted = [...teamData].sort(
+              (a, b) => (a.staffRank ?? 99) - (b.staffRank ?? 99)
+            );
+            setTeamMembers(sorted);
+          } else if (teamMembers.length === 0) {
+            setTeamMembers(fallbackTeam);
+          }
+          if (companyData) {
+            setCompany(companyData);
+          }
         }
       } catch (err) {
-        console.error('Error loading team from db:', err);
+        console.error('Error loading team or company data:', err);
       } finally {
         if (isMounted) setLoading(false);
       }
     }
 
-    loadTeam();
+    loadData();
     return () => {
       isMounted = false;
     };
   }, []);
+
+  const socialLinks = [
+    { key: 'linkedin', icon: FaLinkedinIn, url: company?.linkedin, label: 'LinkedIn' },
+    { key: 'facebook', icon: FaFacebookF, url: company?.facebook, label: 'Facebook' },
+    { key: 'x', icon: FaXTwitter, url: company?.x, label: 'X' },
+    { key: 'instagram', icon: FaInstagram, url: company?.instagram, label: 'Instagram' },
+    { key: 'youtube', icon: FaYoutube, url: company?.youtube, label: 'YouTube' },
+    { key: 'tiktok', icon: FaTiktok, url: company?.tiktok, label: 'TikTok' },
+  ].filter(item => Boolean(item.url && item.url.trim() !== ''));
 
   return (
     <section className="py-20 relative overflow-hidden bg-white">
@@ -102,7 +123,7 @@ const TeamSection = () => {
               >
                 {/* Reduced height aspect ratio: aspect-[4/4.1] instead of aspect-[4/5] */}
                 <div className="relative aspect-[4/4.1] overflow-hidden bg-slate-100">
-                  {member.picture ? (
+                  {member.picture && member.picture.trim() !== '' ? (
                     <Image
                       src={member.picture}
                       alt={member.name || 'Team Member'}
@@ -119,19 +140,22 @@ const TeamSection = () => {
                   )}
 
                   {/* Social Icons Overlay (Bottom of Image) */}
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2.5 transform translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-                    {[FaFacebookF, FaTwitter, FaPinterestP, FaInstagram].map(
-                      (Icon, i) => (
+                  {socialLinks.length > 0 && (
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2.5 transform translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 z-20">
+                      {socialLinks.map(({ key, icon: Icon, url, label }) => (
                         <a
-                          key={i}
-                          href="#"
+                          key={key}
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={label}
                           className="w-9 h-9 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/40 hover:bg-primary hover:border-primary transition-all cursor-pointer"
                         >
                           <Icon className="text-xs" />
                         </a>
-                      )
-                    )}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Reduced card padding and title size for reduced overall card height */}

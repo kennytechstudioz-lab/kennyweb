@@ -1,6 +1,7 @@
 export interface Blog {
   _id?: string;
   image: string;
+  videoUrl?: string;
   title: string;
   subtitle: string;
   category: string;
@@ -13,7 +14,7 @@ export interface Blog {
 
 class BlogStore {
   private static instance: BlogStore;
-  private apiUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5001'}/api/blogs`;
+  private apiUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8003'}/api/blogs`;
 
   public blogs: Blog[] = [];
   public isInitialized: boolean = false;

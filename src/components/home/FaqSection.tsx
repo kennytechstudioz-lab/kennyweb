@@ -1,42 +1,43 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { FaPlus, FaMinus, FaPhoneAlt, FaRegComments } from 'react-icons/fa';
 import { companyStore, Company } from '@/lib/stores/CompanyStore';
-
-const faqs = [
-  {
-    question: 'What services does your company provide?',
-    answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.'
-  },
-  {
-    question: 'What industries do you serve?',
-    answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.'
-  },
-  {
-    question: 'Do you offer customized IT solutions?',
-    answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.'
-  },
-  {
-    question: 'How can I contact your support team?',
-    answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.'
-  },
-  {
-    question: 'How secure are your IT solutions?',
-    answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.'
-  },
-  {
-    question: 'Do you offer 24/7 technical support?',
-    answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.'
-  }
-];
+import { faqStore, Faq } from '@/lib/stores/FaqStore';
 
 const FaqSection = () => {
-  const [openIndex, setOpenIndex] = useState(1);
-  const [company, setCompany] = useState<Company | null>(null);
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [company, setCompany] = useState<Company | null>(companyStore.company);
+  const [faqs, setFaqs] = useState<Faq[]>(() => faqStore.faqs);
+  const [loading, setLoading] = useState(faqStore.faqs.length === 0);
 
   useEffect(() => {
-    companyStore.getCompany().then(setCompany);
+    let isMounted = true;
+    companyStore.getCompany().then((c) => {
+      if (isMounted) setCompany(c);
+    });
+
+    faqStore.getFaqs().then((data) => {
+      if (isMounted) {
+        if (data && data.length > 0) {
+          setFaqs(data);
+        }
+        setLoading(false);
+      }
+    });
+
+    const unsubscribe = faqStore.subscribe(() => {
+      if (isMounted) {
+        setFaqs([...faqStore.faqs]);
+        setLoading(false);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, []);
 
   return (
@@ -62,30 +63,52 @@ const FaqSection = () => {
             </div>
 
             <div className="space-y-4">
-              {faqs.map((faq, index) => (
-                <div 
-                  key={index} 
-                  className={`rounded-2xl transition-all duration-500 overflow-hidden ${openIndex === index ? 'bg-primary text-white shadow-xl' : 'bg-white text-slate-900'}`}
-                >
-                  <button 
-                    onClick={() => setOpenIndex(openIndex === index ? -1 : index)}
-                    className="w-full flex justify-between items-center p-6 text-left font-bold text-xl"
-                  >
-                    <span>{faq.question}</span>
-                    <span className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${openIndex === index ? 'bg-white text-primary rotate-180' : 'bg-slate-50 text-slate-400'}`}>
-                      {openIndex === index ? <FaMinus size={12} /> : <FaPlus size={12} />}
-                    </span>
-                  </button>
-                  
-                  <div 
-                    className={`transition-all duration-500 ease-in-out px-6 ${openIndex === index ? 'max-h-40 pb-6 opacity-100' : 'max-h-0 opacity-0'}`}
-                  >
-                    <p className={`${openIndex === index ? 'text-white/80' : 'text-slate-500'} leading-relaxed`}>
-                      {faq.answer}
-                    </p>
-                  </div>
+              {loading && faqs.length === 0 ? (
+                <div className="space-y-4">
+                  {[1, 2, 3, 4].map((n) => (
+                    <div key={n} className="bg-white rounded-2xl p-6 border border-slate-100 animate-pulse space-y-3">
+                      <div className="h-6 bg-slate-200 rounded w-3/4"></div>
+                      <div className="h-4 bg-slate-100 rounded w-full"></div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              ) : faqs.length === 0 ? (
+                <div className="bg-white rounded-2xl p-10 text-center text-slate-500 border border-slate-100">
+                  <p className="font-semibold">No questions available at the moment.</p>
+                </div>
+              ) : (
+                faqs.map((faq, index) => (
+                  <div 
+                    key={faq._id || index} 
+                    className={`rounded-2xl transition-all duration-500 overflow-hidden ${openIndex === index ? 'bg-primary text-white shadow-xl' : 'bg-white text-slate-900 border border-slate-100/80 shadow-sm'}`}
+                  >
+                    <button 
+                      onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                      className="w-full flex justify-between items-center p-6 text-left font-bold text-lg md:text-xl gap-4"
+                    >
+                      <div className="flex flex-col items-start gap-1">
+                        {faq.category && (
+                          <span className={`text-[11px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full ${openIndex === index ? 'bg-white/20 text-white' : 'bg-primary/10 text-primary'}`}>
+                            {faq.category}
+                          </span>
+                        )}
+                        <span>{faq.question}</span>
+                      </div>
+                      <span className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all ${openIndex === index ? 'bg-white text-primary rotate-180' : 'bg-slate-50 text-slate-400'}`}>
+                        {openIndex === index ? <FaMinus size={12} /> : <FaPlus size={12} />}
+                      </span>
+                    </button>
+                    
+                    <div 
+                      className={`transition-all duration-500 ease-in-out px-6 overflow-hidden ${openIndex === index ? 'max-h-96 pb-6 opacity-100' : 'max-h-0 opacity-0'}`}
+                    >
+                      <p className={`${openIndex === index ? 'text-white/90' : 'text-slate-500'} leading-relaxed text-sm md:text-base`}>
+                        {faq.answer}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -104,9 +127,12 @@ const FaqSection = () => {
                 <p className="text-white/60">Our team will answer all your questions. We ensure a quick response.</p>
               </div>
               
-              <button className="relative z-10 bg-primary text-white px-10 py-4 rounded-full font-bold transition-all hover:bg-white hover:text-primary cursor-pointer">
+              <Link 
+                href="/contact"
+                className="relative z-10 bg-primary text-white px-10 py-4 rounded-full font-bold transition-all hover:bg-white hover:text-primary cursor-pointer text-center"
+              >
                 Contact Us
-              </button>
+              </Link>
             </div>
 
             {/* White Service Card */}

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { FaFacebookF, FaLinkedinIn, FaPaperPlane } from 'react-icons/fa';
+import { FaFacebookF, FaLinkedinIn, FaPaperPlane, FaInstagram, FaYoutube, FaTiktok } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
 import { HiCheckCircle, HiInformationCircle, HiExclamationCircle } from 'react-icons/hi';
 import Image from 'next/image';
@@ -86,22 +86,35 @@ const Footer = () => {
             <p className="text-white/60 leading-relaxed max-w-xs">
               Kenny Tech Studios is a leading provider of innovative digital solutions, specializing in software development, web & mobile applications, and high-impact digital marketing.
             </p>
-            <div className="flex gap-4">
-              {[
-                { Icon: FaFacebookF, href: '#', label: 'Facebook' },
-                { Icon: FaLinkedinIn, href: '#', label: 'LinkedIn' },
-                { Icon: FaXTwitter, href: '#', label: 'X (Twitter)' },
-              ].map(({ Icon, href, label }) => (
-                <a
-                  key={label}
-                  href={href}
-                  aria-label={label}
-                  className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-primary transition-all hover:-translate-y-1"
-                >
-                  <Icon className="text-sm" />
-                </a>
-              ))}
-            </div>
+            {(() => {
+              const socialLinks = [
+                { key: 'linkedin', Icon: FaLinkedinIn, href: company?.linkedin, label: 'LinkedIn' },
+                { key: 'facebook', Icon: FaFacebookF, href: company?.facebook, label: 'Facebook' },
+                { key: 'x', Icon: FaXTwitter, href: company?.x, label: 'X (Twitter)' },
+                { key: 'instagram', Icon: FaInstagram, href: company?.instagram, label: 'Instagram' },
+                { key: 'youtube', Icon: FaYoutube, href: company?.youtube, label: 'YouTube' },
+                { key: 'tiktok', Icon: FaTiktok, href: company?.tiktok, label: 'TikTok' },
+              ].filter(item => Boolean(item.href && item.href.trim() !== ''));
+
+              if (socialLinks.length === 0) return null;
+
+              return (
+                <div className="flex flex-wrap gap-4">
+                  {socialLinks.map(({ key, Icon, href, label }) => (
+                    <a
+                      key={key}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={label}
+                      className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-primary transition-all hover:-translate-y-1 text-white"
+                    >
+                      <Icon className="text-sm" />
+                    </a>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Navigation */}
@@ -112,7 +125,7 @@ const Footer = () => {
                 { label: 'About Us', href: '/#about' },
                 { label: 'Testimonial', href: '/#testimonial' },
                 { label: 'Projects', href: '/projects' },
-                { label: 'FAQs', href: '/faqs' },
+                { label: 'FAQs', href: '/faq' },
                 { label: 'Contact', href: '/contact' },
               ].map(({ label, href }) => (
                 <li key={label}>

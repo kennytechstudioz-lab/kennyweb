@@ -7,7 +7,7 @@ export interface Faq {
 
 class FaqStore {
   private static instance: FaqStore;
-  private apiUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5001'}/api/faq`;
+  private apiUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8003'}/api/faq`;
 
   public faqs: Faq[] = [];
   public isInitialized: boolean = false;

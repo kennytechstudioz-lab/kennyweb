@@ -54,14 +54,14 @@ export default function CompanyDetailsForm({ company, onUpdate }: Props) {
 
   return (
     <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden flex flex-col h-full">
-      <div className="px-8 py-6 border-b border-slate-100 bg-slate-50/50">
+      <div className="px-[10px] sm:px-8 py-6 border-b border-slate-100 bg-slate-50/50">
         <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
           <HiOfficeBuilding className="text-primary" />
           Company Details
         </h3>
       </div>
       
-      <form onSubmit={handleSubmit} className="p-8 flex flex-col flex-1 space-y-6">
+      <form onSubmit={handleSubmit} className="p-[10px] sm:p-8 flex flex-col flex-1 space-y-6">
         <div className="space-y-2">
           <label className="text-sm font-bold text-slate-600 uppercase tracking-wider ml-1">Company Name</label>
           <div className="relative">

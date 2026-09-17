@@ -12,8 +12,11 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8003";
+        console.log(`[NextAuth] Authorizing ${credentials.email} against ${apiUrl}/api/auth/login`);
+
         try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
+          const res = await fetch(`${apiUrl}/api/auth/login`, {
             method: 'POST',
             body: JSON.stringify(credentials),
             headers: { "Content-Type": "application/json" }
@@ -24,9 +27,10 @@ export const authOptions: NextAuthOptions = {
           if (res.ok && user) {
             return user;
           }
+          console.error("[NextAuth] Login failed with status", res.status, user);
           return null;
         } catch (error) {
-          console.error("Auth error:", error);
+          console.error("[NextAuth] Auth error:", error);
           return null;
         }
       }

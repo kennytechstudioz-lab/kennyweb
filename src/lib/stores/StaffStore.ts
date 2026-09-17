@@ -25,7 +25,7 @@ export interface PaginatedResult<T> {
 
 class StaffStore {
   private static instance: StaffStore;
-  private apiUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5001'}/api/auth`;
+  private apiUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8003'}/api/auth`;
 
   // Profile Cache
   public currentUserProfile: Staff | null = null;
@@ -38,6 +38,10 @@ class StaffStore {
   public currentPage: number = 1;
   public isStaffsInitialized: boolean = false;
   public isLoadingStaffs: boolean = false;
+
+  // Public Team Cache
+  public teamMembers: Staff[] = [];
+  public isTeamInitialized: boolean = false;
 
   private listeners: Set<() => void> = new Set();
 
@@ -145,15 +149,21 @@ class StaffStore {
     }
   }
 
-  async getPublicTeam(): Promise<Staff[]> {
+  async getPublicTeam(force = false): Promise<Staff[]> {
+    if (this.isTeamInitialized && this.teamMembers.length > 0 && !force) {
+      return this.teamMembers;
+    }
     try {
       const response = await fetch(`${this.apiUrl}/team`);
       if (!response.ok) throw new Error('Failed to fetch public team');
       const team: Staff[] = await response.json();
-      return team;
+      this.teamMembers = Array.isArray(team) ? team : [];
+      this.isTeamInitialized = true;
+      this.notify();
+      return this.teamMembers;
     } catch (error) {
       console.error('Error fetching public team:', error);
-      return [];
+      return this.teamMembers;
     }
   }
 

@@ -5,6 +5,13 @@ import Image from 'next/image';
 import Header from '@/components/home/Header';
 import Navbar from '@/components/home/Navbar';
 import Footer from '@/components/home/Footer';
+import { companyStore } from '@/lib/stores/CompanyStore';
+import { blogStore } from '@/lib/stores/BlogStore';
+import { staffStore } from '@/lib/stores/StaffStore';
+import { projectStore } from '@/lib/stores/ProjectStore';
+import { serviceStore } from '@/lib/stores/ServiceStore';
+import { faqStore } from '@/lib/stores/FaqStore';
+import { testimonialStore } from '@/lib/stores/TestimonialStore';
 
 export default function HomeLayout({
   children,
@@ -14,12 +21,48 @@ export default function HomeLayout({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Give it a brief, high-end delay to let resources fetch and components render
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1200);
+    let isMounted = true;
+    const startTime = Date.now();
+    const MIN_LOAD_TIME = 600; // minimum duration for smooth visual presentation
+    const MAX_TIMEOUT = 8000;  // safety fallback in case of network issues
 
-    return () => clearTimeout(timer);
+    const safetyTimer = setTimeout(() => {
+      if (isMounted) {
+        setLoading(false);
+      }
+    }, MAX_TIMEOUT);
+
+    async function preloadApiData() {
+      try {
+        await Promise.allSettled([
+          companyStore.getCompany(),
+          blogStore.getBlogs(),
+          staffStore.getPublicTeam(),
+          projectStore.getProjects(),
+          serviceStore.getServices(),
+          faqStore.getFaqs(),
+          testimonialStore.getTestimonials(),
+        ]);
+      } catch (err) {
+        console.error('Error preloading home data:', err);
+      } finally {
+        if (!isMounted) return;
+        const elapsed = Date.now() - startTime;
+        const delay = Math.max(0, MIN_LOAD_TIME - elapsed);
+        setTimeout(() => {
+          if (isMounted) {
+            setLoading(false);
+          }
+        }, delay);
+      }
+    }
+
+    preloadApiData();
+
+    return () => {
+      isMounted = false;
+      clearTimeout(safetyTimer);
+    };
   }, []);
 
   return (

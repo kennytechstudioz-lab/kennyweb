@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { companyStore, Company } from '@/lib/stores/CompanyStore';
 import CompanyDetailsForm from '@/components/admin/CompanyDetailsForm';
 import BankingDetailsForm from '@/components/admin/BankingDetailsForm';
+import SocialMediaLinksForm from '@/components/admin/SocialMediaLinksForm';
+import CompanyStatsForm from '@/components/admin/CompanyStatsForm';
 
 export default function CompanySettings() {
   const [loading, setLoading] = useState(true);
@@ -34,15 +36,17 @@ export default function CompanySettings() {
   }
 
   return (
-    <div className="w-full space-y-8">
+    <div className="w-full space-y-8 px-[10px] sm:px-0">
       <div className="space-y-2">
         <h1 className="text-3xl font-black text-slate-900 tracking-tight">Company Settings</h1>
-        <p className="text-slate-500 font-medium">Manage your company's core information and banking details.</p>
+        <p className="text-slate-500 font-medium">Manage your company's core information, statistics & metrics, banking details, and social media links.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         <CompanyDetailsForm company={company} onUpdate={handleUpdate} />
+        <CompanyStatsForm company={company} onUpdate={handleUpdate} />
         <BankingDetailsForm company={company} onUpdate={handleUpdate} />
+        <SocialMediaLinksForm company={company} onUpdate={handleUpdate} />
       </div>
     </div>
   );

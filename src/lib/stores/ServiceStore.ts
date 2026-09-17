@@ -10,7 +10,10 @@ export interface Service {
 
 class ServiceStore {
   private static instance: ServiceStore;
-  private apiUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5001'}/api/services`;
+  private apiUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8003'}/api/services`;
+
+  public services: Service[] = [];
+  public isInitialized: boolean = false;
 
   private constructor() {}
 
@@ -21,14 +24,20 @@ class ServiceStore {
     return ServiceStore.instance;
   }
 
-  async getServices(): Promise<Service[]> {
+  async getServices(force = false): Promise<Service[]> {
+    if (this.isInitialized && this.services.length > 0 && !force) {
+      return this.services;
+    }
     try {
       const response = await fetch(this.apiUrl);
       if (!response.ok) throw new Error('Failed to fetch services');
-      return await response.json();
+      const data: Service[] = await response.json();
+      this.services = Array.isArray(data) ? data : [];
+      this.isInitialized = true;
+      return this.services;
     } catch (error) {
       console.error('Error fetching services:', error);
-      return [];
+      return this.services;
     }
   }
 
