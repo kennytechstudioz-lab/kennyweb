@@ -54,10 +54,10 @@ const Footer = () => {
         <div className="container py-8 md:py-16 border-b border-white/10">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 md:gap-8">
             <h2 className="text-2xl md:text-5xl font-extrabold text-center md:text-left">
-              Let's <span className="text-primary">Connect</span> there
+              Let's <span className="text-primary">Connect</span> here
             </h2>
-            <Link 
-              href="/contact" 
+            <Link
+              href="/contact"
               className="bg-primary text-white px-6 py-3 md:px-10 md:py-4 rounded-full font-bold transition-all hover:bg-white hover:text-primary shadow-lg hover:shadow-primary/40 text-center cursor-pointer"
             >
               Contact Us
